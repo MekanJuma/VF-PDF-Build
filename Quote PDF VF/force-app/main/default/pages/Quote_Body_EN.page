@@ -1,0 +1,291 @@
+<apex:page standardController="Quote" extensions="QuotePDFController">
+    <apex:stylesheet value="{!$Resource.angebotCSS}" />
+    <div class="content">
+        <!-- Variable for Currency Symbol -->
+        <apex:variable var="currencySymbol" value="{!CASE(Quote.CurrencyIsoCode, 'EUR', '€', 'USD', '$', 'CHF', 'CHF', '')}" />
+
+        <!-- Header Image -->
+        <apex:variable value="{!Quote.RunningUserCompanyName__c}" var="companyName"/>
+
+        <div class="Header-Image" style="text-align: center; margin-bottom: 40px;">
+            <apex:image url="{! 
+                    CASE(
+                        companyName,
+                        'schmitz_rz_backupeagle', URLFOR($Resource.Quote_Template_Header_SchmitzRZ),
+                        URLFOR($Resource.Quote_Template_Header_Accompio)
+                    )
+                }" 
+                style="height: 100px; float:right;" 
+            />
+        </div>
+
+        <!-- Clearing div -->
+        <div style="clear: both;"></div>
+
+        <!-- Body Wrapper -->
+        <div style="height:50px;">
+            <table style="width: 100%; border-collapse: separate; font-size: 10pt;" class="default-font">
+                <tr>
+                    <!-- Left aligned block -->
+                    <td style="text-align:left; vertical-align:top; width:50%; padding-bottom:6pt;">
+                        <!-- Seller's Address -->
+                        <p style="margin: 0 0 8pt 0; padding-left: 0; text-indent: 0; line-height: 1; color: #333;">
+                            {!footerInformation.CompanyName__c} | {!footerInformation.Street__c} | {!footerInformation.City__c}
+                        </p>
+                        <!-- Customer's Address -->
+                        <p style="padding-left: 0; text-indent: 0; margin: 8pt 0 0 0; line-height: 1;">
+                            {!Quote.Account.Name}
+                        </p>
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 1;">
+                            <apex:outputText value="{!IF(NOT(ISBLANK(Quote.BillingStreet)), Quote.BillingStreet, Quote.Account.BillingStreet)}" />
+                        </p>
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 1;">
+                            <apex:outputText value="{!IF(NOT(ISBLANK(Quote.BillingPostalCode)), Quote.BillingPostalCode, Quote.Account.BillingPostalCode)} " />
+                            <apex:outputText value="{!IF(NOT(ISBLANK(Quote.BillingCity)), Quote.BillingCity, Quote.Account.BillingCity)}" />
+                        </p>
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 1;">
+                            <apex:outputText value="{!IF(NOT(ISBLANK(Quote.BillingCountry)), Quote.BillingCountry, Quote.Account.BillingCountry)}" />
+                        </p>
+                    </td>
+
+                    <!-- Right aligned block -->
+                    <td style="text-align:left; vertical-align:top; width:30%; padding-bottom:6pt;">
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 3;">&nbsp;</p>
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 1;">
+                        	<apex:outputText value="{!IF(NOT(ISBLANK(Quote.ShippingStreet)), Quote.ShippingStreet, Quote.Account.ShippingStreet)}" />
+                        </p>
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 1;">
+                        	<apex:outputText value="{!IF(NOT(ISBLANK(Quote.ShippingPostalCode)), Quote.ShippingPostalCode, Quote.Account.ShippingPostalCode)} " />
+                            <apex:outputText value="{!IF(NOT(ISBLANK(Quote.ShippingCity)), Quote.ShippingCity, Quote.Account.ShippingCity)}" />
+                        </p>
+                        <p style="padding-left: 0; text-indent: 0; margin: 0; line-height: 1;">{!footerInformation.Phone__c}
+                        	<apex:outputText value="{!IF(NOT(ISBLANK(Quote.ShippingCountry)), Quote.ShippingCountry, Quote.Account.ShippingCountry)}" />
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Quote Number -->
+            <apex:variable var="quoteText" value="{!IF(AND(companyName="primetec_gmbh", Quote.IsApproved__c = false, Quote.TotalPrice > 10000), 'Quote Draft ' + Quote.QuoteNumber, 'Quote ' + Quote.QuoteNumber)}"/>
+            <div class="Quote-Number" style="margin-bottom: -10px; margin-left:auto; text-align: left;">
+                <h1 class="default-font" style="font-size: 15pt; font-weight: bold;">{!quoteText}</h1>
+            </div>
+
+            <!-- Header Information Table -->
+            <table style="width:100%; border-collapse:collapse; margin-left:auto;" class="default-font">
+                <tr>
+                    <!-- Left aligned block -->
+                    <td style="text-align: left; vertical-align: top; width: 50%; padding-bottom: 4pt;">
+                        <p style="padding-top: 4pt; text-indent: 0pt; margin: 0; line-height: 1;">
+                            <span style="width: 100px; display: inline-block;">Date:</span> {!DAY(TODAY())}/{!MONTH(TODAY())}/{!YEAR(TODAY())}
+                        </p>
+                        <p style="padding-top: 4pt; text-indent: 0pt; margin: 0; line-height: 1;">
+                            <span style="width: 100px; display: inline-block;">Valid until:</span>&nbsp;{!DAY(Quote.Valid_Until__c)}/{!MONTH(Quote.Valid_Until__c)}/{!YEAR(Quote.Valid_Until__c)}
+                        </p>
+                        <br></br>
+                        <br></br>
+                    </td>
+                    <!-- Right aligned block -->
+                    <td style="text-align: left; vertical-align: top; width: 50%; padding-bottom: 3pt;">                      
+                        <p style="padding-left: 20pt; text-indent: 0pt; margin: 0; line-height: 1;">
+                            <span style="width: 100px; display: inline-block;">Agent:</span>&nbsp;{!Quote.Owner.Name}
+                        </p>
+                        <p style="padding-left: 20pt; text-indent: 0pt; margin: 0; line-height: 1;">
+                            <span style="width: 100px; display: inline-block;">Phone:</span>&nbsp;{!Quote.Owner.Phone}
+                        </p>
+                        <p style="padding-left: 20pt; text-indent: 0pt; margin: 0; line-height: 1;">
+                            <span style="width: 100px; display: inline-block;">E-Mail:</span>
+                            <a href="mailto:{!Quote.Owner.Email}" class="a" target="_blank" style="text-decoration: none; color: black;">{!Quote.Owner.Email}</a>
+                        </p>
+                    </td>
+                    <p style="padding-top: 2pt; padding-bottom: 4pt; text-indent: 0pt; margin: 0; line-height: 1;">
+                        <br/> Thank you for your interest in our products and services.
+                    </p>
+                </tr>
+            </table>
+
+            <!-- QuoteLineItem Table -->
+            <table class="quote-line-item-table default-font">
+                <tr style="line-height: 0pt;">
+                    <td style="width: 5%; border-bottom-style: solid; border-bottom-width: 0.5pt;">
+                        <p class="s3" style="padding-left: 2pt;text-indent: 0pt; text-align: left;">Pos.</p>
+                    </td>
+                    <td style="width:35%; border-bottom-style: solid;border-bottom-width: 0.5pt;">
+                        <p class="s3" style="padding-left: 10pt;text-indent: 0pt;text-align: left;">Description</p>
+                    </td>
+                    <td style="width: 5%; border-bottom-style: solid; border-bottom-width: 0.5pt;">
+                        <p class="s3" style="padding-right: 12pt;text-indent: 0pt;text-align: right;">Quantity</p>
+                    </td>
+                    <td style="width: 10%; border-bottom-style: solid; border-bottom-width: 0.5pt;">
+                        <p class="s3" style="padding-left: 4pt;padding-right: 1pt;text-indent: 0pt;line-height: 4pt;text-align: center;">Unit</p>
+                    </td>
+                    <td style="width: 10%; border-bottom-style: solid; border-bottom-width: 0.5pt;">
+                        <p class="s3" style="padding-right: 2pt;text-indent: 0pt;text-align: right;">Price/Unit {!currencySymbol}</p>
+                    </td>
+                    <td style="width: 10%; border-bottom-style: solid; border-bottom-width: 0.5pt;">
+                        <p class="s3" style="padding-right: 2pt;text-indent: 0pt;text-align: right;">Total {!currencySymbol}</p>
+                    </td>
+                </tr>
+
+                <!-- Variables for Quote Line Items -->
+                <apex:variable var="pos" value="{!0}" />
+                <apex:variable var="itemCounter" value="{!0}" />
+                <apex:variable var="pageNumber" value="{!0}" />
+
+                <!-- Iterate through Quote Line Items -->
+                <apex:repeat value="{!quoteLineItemWrappers}" var="wrappedItem">
+                    <tr style="page-break-inside: avoid;">
+                        <td style="width:29pt;">
+                            <p class="s3" style="padding-top: 2pt;padding-left: 2pt;text-indent: 0pt;line-height: 12pt;text-align: left;">
+                                <apex:variable var="pos" value="{!pos+ 1}"/>
+                                {!pos}
+                            </p>
+                        </td>
+                        <td style="width:283pt;page-break-inside: avoid;">
+                            <p class="s4" style="padding-top: 2pt;padding-left: 10pt;text-indent: 0pt;line-height: 12pt;text-align: left; font-weight: bold;">
+                                {!wrappedItem.item.Product2.Name}
+                            </p>
+                            <p class="s3" style="padding-left: 40pt; margin: 0; text-align: left;">
+                                <apex:outputText value="{!wrappedItem.item.DescriptionRichText__c}" escape="false"/>
+                            </p>                            
+                        </td>
+                        <td style="width:54pt;">
+                            <p class="s3" style="padding-top: 2pt;padding-right: 12pt;text-indent: 0pt;line-height: 12pt;text-align: right;">
+                                {!wrappedItem.item.Quantity}
+                            </p>
+                        </td>
+                        <td style="width:36pt;">
+                            <p class="s3" style="padding-top: 2pt;padding-left: 4pt;text-indent: 0pt;line-height: 12pt;text-align: center;">
+                                pcs
+                            </p>
+                        </td>
+                        <td style="width:58pt;">
+                            <p class="s3" style="padding-top: 2pt;padding-right: 8pt;text-indent: 0pt;line-height: 12pt;text-align: right;">
+                                {!wrappedItem.formattedUnitPrice} {!currencySymbol}
+                            </p>
+                        </td>
+                        <td style="width:58pt;">
+                            <p class="s3" style="padding-top: 2pt;padding-right: 8pt;text-indent: 0pt;line-height: 12pt;text-align: right;">
+                                {!wrappedItem.formattedTotalPrice} {!currencySymbol}
+                            </p>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+
+            <!-- Addtional Notes after last position and before price summary -->
+            <p class="s3" style="padding-left: 40pt; margin: 0; text-align: left;">
+                <apex:outputText value="{!Quote.AdditionalNotes__c}" escape="false"/>
+            </p>
+
+            <div style="page-break-inside: avoid; width: 100%; text-align: left;">
+                <!-- Total Cost Overview -->
+                <p style="text-indent:0pt; text-align:left;"><br/></p>
+                <div style="width: 70%; float: right; text-align: left;">
+                    <table style="border-collapse:collapse; width: 100%;">
+                        <tr>
+                            <td style="border-top-style:solid;border-top-width:0.5pt; width: 70%;">
+                                <!-- Thinner border -->
+                                <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: left;">Items net</p>
+                            </td>
+                            <td style="border-top-style:solid;border-top-width:0.5pt; width: 30%;">
+                                <!-- Thinner border -->
+                                <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: right;">
+                                    {!formattedQuoteTotalPrice} {!currencySymbol}
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Shipping cost net -->
+                        <apex:outputPanel rendered="{!NOT(ISNULL(Quote.ShippingCostNet__c))}">
+                            <tr>
+                                <td style="width: 70%;">
+                                    <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: left;">Shipping cost net</p>
+                                </td>
+                                <td style="width: 30%;">
+                                    <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: right;">
+                                        {!formattedShippingCostNet} {!currencySymbol}
+                                    </p>
+                                </td>
+                            </tr>
+                        </apex:outputPanel>
+
+                        <!-- Items VAT. 19.00% on -->
+                        <apex:outputPanel rendered="{!NOT(ISNULL(Quote.Tax))}">
+                            <tr>
+                                <td style="width: 70%;">
+                                    <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: left;">Items VAT. 19.00% on
+                                        {!formattedQuoteTotalPrice} {!currencySymbol}
+                                    </p>
+                                </td>
+                                <td style="width: 30%;">
+                                    <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: right;">
+                                        {!formattedQuoteTax} {!currencySymbol}
+                                    </p>
+                                </td>
+                            </tr>
+                        </apex:outputPanel>
+
+                        <!-- Shipping VAT. 19.00% on -->
+                        <apex:outputPanel rendered="{!NOT(ISNULL(Quote.ShippingHandling))}">
+                            <tr>
+                                <td style="width: 70%;">
+                                    <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: left;">Shipping VAT. 19.00% on
+                                        {!formattedShippingCostNet} {!currencySymbol}
+                                    </p>
+                                </td>
+                                <td style="width: 30%;">
+                                    <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: right;">
+                                        {!formattedShippingHandling} {!currencySymbol}
+                                    </p>
+                                </td>
+                            </tr>
+                        </apex:outputPanel>
+
+                        <tr>
+                            <td style="border-bottom-style:solid;border-bottom-width:0.5pt; width: 70%;">
+                                <!-- Thinner border -->
+                                <p class="s4" style="padding: 0pt;text-indent: 0pt;margin: 0pt;text-align: left;"><b>Total sum</b></p>
+                            </td>
+                            <td style="border-bottom-style:solid;border-bottom-width:0.5pt; width: 30%;">
+                                <!-- Thinner border -->
+                                <p class="s3" style="padding: 2pt;text-indent: 0pt;margin: 0pt;line-height: 9pt;text-align: right;">
+                                    {!formattedGrandTotal} {!currencySymbol}
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Ensure the next section starts below the floated content -->
+                <div style="clear: both;"></div>
+
+                <!-- Terms and Conditions -->
+                <div style="text-indent:0pt; text-align:left; margin-top:20pt; font-size:10pt; width: 100%;" class="default-font">
+                    <apex:variable var="validityPeriod" value="{!IF(
+                        ISNULL(Quote.ValidFrom__c) || ISNULL(Quote.Valid_Until__c) || 
+                        (Quote.Valid_Until__c - Quote.ValidFrom__c) <= 0,
+                        10,
+                        Quote.Valid_Until__c - Quote.ValidFrom__c
+                    )}" />
+                    
+                    <p>be-solutions will be bound for {!validityPeriod} days by the terms and conditions of the offer.</p>
+                    
+                    <apex:outputPanel rendered="{!NOT(ISNULL(footerInformation.AGB__c))}">
+                        <p>Our general terms and conditions apply: 
+                            <a href="{!footerInformation.AGB__c}" target="_blank" style="text-decoration: none;">{!footerInformation.AGB__c}</a>
+                        </p>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel rendered="{!NOT(ISNULL(footerInformation.OrderEmail__c))}">
+                        <p>Please send your order to: 
+                            <a href="mailto:{!footerInformation.OrderEmail__c}" style="text-decoration: none;">{!footerInformation.OrderEmail__c}</a>
+                        </p>
+                    </apex:outputPanel>
+                    
+                    <p>Customer Name Date Stamp / Signature</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</apex:page>

@@ -1,0 +1,139 @@
+<apex:page standardController="Quote" extensions="QuotePDFController" renderAs="pdf" language="en" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
+    <html>
+
+    <head>
+        <style>
+            @page {
+                    size: A4;
+                    margin-left: 60px;
+                    margin-right: 60px;
+                    margin-top: 60px;
+                    margin-bottom: 120px;
+
+                    @top-right {
+                        content: element(header);
+                        float: right;
+                    }
+
+                    @bottom-left {
+                        content: element(footer);
+                    }
+                }
+
+                .pagenumber:before {
+                    content: counter(page);
+                }
+
+                .pagecount:before {
+                    content: counter(pages);
+                }
+
+                .page-break {
+                    display: block;
+                    page-break-after: always;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    font-size: 10pt;
+                    color: black;
+                }
+
+                div.header {
+                    display: block;
+                    position: running(header);
+                    width: 100%;
+                    text-align: right;
+                    margin-top: 20px;
+                }
+
+                div.pageNumber {
+                    color: black;
+                    text-align: right;
+                    font-size: 12px;
+                }
+
+                div.footer {
+                    position: running(footer);
+                }
+
+                table {
+                    width: 100%;
+                }
+
+                .counterReset {
+                    counter-reset: page;
+                }
+
+                .contractPage {
+                    counter-increment: page;
+                    content: counter(page);
+                }
+
+                .afterAgreementLine p{
+                    margin-bottom: 0px;
+                }
+                .offerbody p{
+                    padding: 0;
+                    margin: 0;
+                }
+                .watermark {
+                background-image: url("{!URLFOR($Resource.Quote_Watermark)}");
+                }
+        </style>
+    </head>
+
+    <apex:variable value="{!Quote.RunningUserCompanyName__c}" var="companyName"/>
+
+    <body class="{!IF(AND(companyName = 'primetec_gmbh', Quote.IsApproved__c = false, Quote.TotalPrice > 10000), 'watermark', '')}">
+        <!-- PDF BODY -->
+        <div>
+            <!-- INSERT CHILD VF PAGES -->
+            <apex:include pageName="Angebot_Body_EN" />
+            <!-- INSERT CHILD VF PAGES -->
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer" style="color:black;">
+            <hr style="width:100%; border:0; border-top:0.5px solid black; margin-left: auto;" />
+            <table style="width: 100%; font-family: inherit; font-size: 8pt;" class="default-font">
+                <tr>
+                    <td style="text-align:left; padding-right:10px;">
+                        <p class="s5" style="margin: 0;">{!footerInformation.CompanyName__c}</p>
+                        <p class="s5" style="margin: 0;">{!footerInformation.Street__c}</p>
+                        <p class="s5" style="margin: 0;">{!footerInformation.City__c}</p>
+                        <p class="s5" style="margin: 0;">
+                            <a href="{!footerInformation.Website__c}" class="s6" target="_blank" style="text-decoration: none; color: black;">
+                                
+                            </a>
+                        </p>
+                        <p class="s5" style="margin: 0;">{!footerInformation.Website__c}</p>
+                    </td>
+                    <td style="text-align: left; padding-right: 10px;">
+                        <p class="s5" style="margin: 0;">Phone: {!footerInformation.Phone__c}</p>
+                        <p class="s5" style="margin: 0;">
+                            <a href="mailto:{!footerInformation.Email__c}" class="s6" target="_blank" style="text-decoration: none; color: black;">
+                                E-Mail: 
+                            </a>
+                            {!footerInformation.Email__c}
+                        </p>
+                        <p class="s5" style="margin: 0;">VAT-ID: {!footerInformation.UstId__c}</p>
+                    </td>
+                    <td style="text-align: left; padding-right: 10px;">
+                        <p class="s5" style="margin: 0;">Managing Directors:</p>
+                        <p class="s5" style="margin: 0;">{!footerInformation.GF1__c}, {!footerInformation.GF2__c}, {!footerInformation.GF3__c}</p>
+                        <p class="s5" style="margin: 0;">{!footerInformation.HRB__c}</p>
+                    </td>
+                    <td style="text-align: left;">
+                        <p class="s5" style="margin: 0;">Bank Account:</p>
+                        <p class="s5" style="margin: 0;">{!footerInformation.Bank__c}</p>
+                        <p class="s5" style="margin: 0;">IBAN: {!footerInformation.IBAN__c}</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <!-- PDF BODY -->
+    </body>
+
+    </html>
+</apex:page>
